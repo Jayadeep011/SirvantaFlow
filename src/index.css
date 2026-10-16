@@ -1,0 +1,218 @@
+/* src/index.css */
+/* Phase 1: "Modern Royal Dark" design tokens, fonts, and glass / border / telemetry utilities. */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Canvas and elevation */
+  --bg-canvas: #070708;
+  --bg-surface-base: #0E0E11;
+  --bg-surface-elevated: #15151A;
+  --bg-surface-glass: rgba(14, 14, 17, 0.65);
+
+  /* Champagne gold accent matrix */
+  --gold-primary: #E2B13C;
+  --gold-light: #F3D27C;
+  --gold-muted: rgba(226, 177, 60, 0.25);
+  --gold-ambient-glow: rgba(226, 177, 60, 0.06);
+  --gold-trace-neon: #FFD666;
+
+  /* Typography tokens */
+  --text-editorial-primary: #F8F9FA;
+  --text-body-secondary: #9AA0A6;
+  --text-telemetry-dim: #5F6368;
+
+  /* Status telemetry */
+  --status-emerald: #10B981;
+  --status-emerald-glow: rgba(16, 185, 129, 0.15);
+  --status-amber: #F59E0B;
+  --status-rose: #F43F5E;
+
+  /* Glass and metallic borders */
+  --border-glass: 1px solid rgba(255, 255, 255, 0.07);
+  --border-gold-gradient: linear-gradient(135deg, rgba(226, 177, 60, 0.4) 0%, rgba(255, 255, 255, 0.05) 100%);
+  --shadow-elevation-depth: 0 20px 50px -10px rgba(0, 0, 0, 0.85), 0 0 30px rgba(226, 177, 60, 0.03);
+
+  /* Cursor light trail position, updated by the pointer script in Phase 6 */
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
+html { scroll-behavior: smooth; color-scheme: light; }
+html.dark { color-scheme: dark; --range-track: rgba(255, 255, 255, 0.1); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body { margin: 0; font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif; background: #F8FAFC; color: #0F172A; }
+html.dark body { background: var(--bg-canvas); color: var(--text-editorial-primary); }
+
+/* ---------- typography system ---------- */
+/* Editorial headlines: Instrument Serif has one weight, so bold is switched off to avoid fake bolding. */
+.font-display {
+  font-family: 'Instrument Serif', 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em;
+}
+/* Financial telemetry: every figure is monospaced with forced tabular numerals. */
+.num, .tabular-nums {
+  font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.03em;
+}
+
+/* ---------- glass and border utilities ---------- */
+.glass { background-color: var(--bg-surface-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: var(--border-glass); }
+.glass-strong { background: rgba(14, 14, 17, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: var(--border-glass); }
+.border-glass { border: var(--border-glass); }
+.surface-base { background: var(--bg-surface-base); }
+.surface-elevated { background: var(--bg-surface-elevated); }
+.text-gold { color: var(--gold-primary); }
+.text-gold-light { color: var(--gold-light); }
+.gold-divider { height: 1px; border: 0; background: linear-gradient(90deg, transparent, var(--gold-muted), transparent); }
+.gold-ambient { background: radial-gradient(closest-side, var(--gold-ambient-glow), transparent); }
+
+/* Obsidian node card with a metallic gold hairline border and ambient backlight */
+.node-shell { position: relative; isolation: isolate; border-radius: 18px; padding: 1px; background: var(--border-gold-gradient); box-shadow: var(--shadow-elevation-depth); }
+.node-shell::before { content: ''; position: absolute; inset: -22px; z-index: -1; background: radial-gradient(closest-side, rgba(226, 177, 60, 0.16), transparent 72%); filter: blur(12px); transition: opacity 0.3s; opacity: 0.8; }
+.node-shell:hover::before { opacity: 1; }
+.node-body { border-radius: 17px; background-color: var(--bg-surface-base); height: 100%; }
+
+
+/* ---------- telemetry animation ---------- */
+@keyframes pulse-halo {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--pulse, 16, 185, 129), 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(var(--pulse, 16, 185, 129), 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--pulse, 16, 185, 129), 0); }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.85; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+/* Dual-ring telemetry dot: a halo (box-shadow) plus a second expanding ring (::after). Tone via --pulse. */
+.pulse-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 999px; background: rgb(var(--pulse, 16, 185, 129)); animation: pulse-halo 2s infinite; }
+.pulse-dot::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; border: 1px solid rgba(var(--pulse, 16, 185, 129), 0.7); animation: pulse-ring 2s 0.4s infinite ease-out; }
+.pulse-dot[data-tone='amber'] { --pulse: 245, 158, 11; }
+.pulse-dot[data-tone='rose'] { --pulse: 244, 63, 94; }
+
+@keyframes tracer-flow { to { stroke-dashoffset: -48; } }
+.tracer { stroke-dasharray: 10 14; animation: tracer-flow 1.4s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot, .pulse-dot::after, .tracer { animation: none; }
+}
+
+/* ---------- tactile metallic range slider ---------- */
+.royal-range { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; cursor: pointer; }
+.royal-range:focus { outline: none; }
+.royal-range::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 999px;
+  background: linear-gradient(90deg, #F3D27C 0, #E2B13C var(--pct, 50%), var(--range-track, rgba(15, 23, 42, 0.14)) var(--pct, 50%));
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.royal-range::-moz-range-track {
+  height: 6px; border-radius: 999px;
+  background: linear-gradient(90deg, #F3D27C 0, #E2B13C var(--pct, 50%), var(--range-track, rgba(15, 23, 42, 0.14)) var(--pct, 50%));
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.royal-range::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px; margin-top: -8px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #FFF4CC, #E2B13C 55%, #8A6A1F);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 14px rgba(226, 177, 60, 0.45);
+}
+.royal-range::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #FFF4CC, #E2B13C 55%, #8A6A1F);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 14px rgba(226, 177, 60, 0.45);
+}
+.royal-range:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--gold-trace-neon); outline-offset: 3px; }
+.royal-range:focus-visible::-moz-range-thumb { outline: 2px solid var(--gold-trace-neon); outline-offset: 3px; }
+
+/* ---------- marketing glow ---------- */
+.hero-glow {
+  background:
+    radial-gradient(60rem 30rem at 15% -10%, rgba(46, 95, 191, 0.14), transparent 60%),
+    radial-gradient(45rem 28rem at 90% 0%, rgba(197, 160, 89, 0.16), transparent 60%);
+}
+html.dark .hero-glow {
+  background:
+    radial-gradient(60rem 30rem at 15% -10%, rgba(226, 177, 60, 0.07), transparent 60%),
+    radial-gradient(45rem 28rem at 90% 0%, rgba(226, 177, 60, 0.05), transparent 60%);
+}
+
+/* Invoice printing: only the .print-only copy of the invoice is shown on paper. */
+.print-only { display: none; }
+@media print {
+  @page { margin: 14mm; }
+  body > *:not(.print-only) { display: none !important; }
+  .print-only { display: block !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #ffffff !important; color: #0F172A !important; }
+}
+
+/* ---------- waterfall bridges: glowing gold links that pulse with light on hover ---------- */
+.bridge { position: relative; flex: 0 0 30px; align-self: center; height: 22px; }
+.bridge-line {
+  position: absolute; left: 0; right: 0; top: 50%; height: 2px; transform: translateY(-50%); border-radius: 2px;
+  background: linear-gradient(90deg, rgba(226, 177, 60, 0.18), var(--gold-trace-neon), rgba(226, 177, 60, 0.18));
+  box-shadow: 0 0 10px rgba(255, 214, 102, 0.45); transition: box-shadow 0.25s;
+}
+.bridge-dot {
+  position: absolute; top: 50%; left: 0; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; opacity: 0;
+  background: var(--gold-trace-neon); box-shadow: 0 0 10px 2px rgba(255, 214, 102, 0.85);
+}
+.bridge:hover .bridge-line, .stage:hover + .bridge .bridge-line, .bridge:has(+ .stage:hover) .bridge-line { box-shadow: 0 0 16px rgba(255, 214, 102, 0.9); }
+.bridge:hover .bridge-dot, .stage:hover + .bridge .bridge-dot, .bridge:has(+ .stage:hover) .bridge-dot { animation: bridge-pulse 0.9s ease-out; }
+@keyframes bridge-pulse {
+  0% { left: 0; opacity: 0; }
+  15% { opacity: 1; }
+  100% { left: calc(100% - 8px); opacity: 0; }
+}
+
+/* A freshly logged audit-trail row flashes gold, then settles */
+@keyframes row-flash { from { background: rgba(226, 177, 60, 0.28); } to { background: transparent; } }
+.row-flash { animation: row-flash 1.2s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bridge-dot, .row-flash { animation: none !important; }
+}
+
+/* ---------- Phase 4: command-center layout, metric cards, ambient glow ---------- */
+.label-caps { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.18em; color: #64748B; }
+html.dark .label-caps { color: var(--text-body-secondary); }
+
+/* Cells sit 1px apart; the container colour shows through as a delicate gradient line. */
+.command-grid { display: grid; gap: 1px; overflow: hidden; border-radius: 14px; border: 1px solid #E2E8F0; background: #E2E8F0; }
+html.dark .command-grid {
+  border-color: rgba(255, 255, 255, 0.07);
+  background: linear-gradient(135deg, var(--gold-muted) 0%, rgba(255, 255, 255, 0.06) 45%, var(--gold-muted) 100%);
+  box-shadow: var(--shadow-elevation-depth);
+}
+html .command-cell { position: relative; background-color: #FFFFFF; }
+html.dark .command-cell { background-color: var(--bg-surface-base); }
+
+/* Soft gold and emerald light behind the workspace (dark theme only) */
+.app-ambient { display: none; position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+html.dark .app-ambient {
+  display: block;
+  background:
+    radial-gradient(48rem 28rem at 85% -5%, rgba(226, 177, 60, 0.08), transparent 65%),
+    radial-gradient(40rem 26rem at 5% 105%, rgba(16, 185, 129, 0.05), transparent 65%);
+}
+
+/* ---------- Phase 6: cursor light trails ---------- */
+@property --spot-a { syntax: '<number>'; inherits: false; initial-value: 0; }
+.spotlight, .command-cell, .node-body, .glass {
+  --spot-max: 0.1;
+  background-image: radial-gradient(500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(226, 177, 60, var(--spot-a)), transparent 40%);
+  transition: --spot-a 0.25s ease;
+}
+html.dark .spotlight, html.dark .command-cell, html.dark .node-body, html.dark .glass { --spot-max: 0.08; }
+.spotlight:hover, .command-cell:hover, .node-body:hover, .glass:hover { --spot-a: var(--spot-max); }
+@media (prefers-reduced-motion: reduce) {
+  .spotlight, .command-cell, .node-body, .glass { transition: none; }
+}
